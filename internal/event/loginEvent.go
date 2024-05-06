@@ -37,6 +37,9 @@ func loginEvent(p *proxy.Proxy) func(*proxy.LoginEvent) {
 						"%time%":   v.TimeEnds.Format(config.ViperConfig.GetString("config.time_format")),
 					}),
 			})
+		} else {
+			log.Println(err)
+
 		}
 	}
 }
