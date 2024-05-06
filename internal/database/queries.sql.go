@@ -27,7 +27,7 @@ func (q *Queries) CreateLookupUserTable(ctx context.Context) error {
 const createPunishType = `-- name: CreatePunishType :exec
 DO $$ BEGIN
     IF to_regtype('punishtype') IS NULL THEN
-        CREATE TYPE friendstatus AS enum (
+        CREATE TYPE punishtype AS enum (
             'BAN',
             'MUTE'
         );

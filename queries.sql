@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS lookup_users (
 -- name: CreatePunishType :exec
 DO $$ BEGIN
     IF to_regtype('punishtype') IS NULL THEN
-        CREATE TYPE friendstatus AS enum (
+        CREATE TYPE punishtype AS enum (
             'BAN',
             'MUTE'
         );
