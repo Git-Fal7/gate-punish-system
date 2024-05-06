@@ -45,7 +45,7 @@ INSERT INTO punished_users (
 SELECT user_uuid FROM lookup_users
 WHERE user_name = $1;
 
--- name: IsBannedPlayer :one
+-- name: IsPunishedPlayer :one
 SELECT * FROM punished_users
-WHERE user_uuid = $1 AND punish_type = "BAN" AND time_ends > NOW()
+WHERE user_uuid = $1 AND punish_type = $2 AND time_ends > NOW()
 ORDER BY time_ends DESC LIMIT 1;

@@ -68,14 +68,19 @@ func (q *Queries) GetPlayerUUID(ctx context.Context, userName string) (uuid.UUID
 	return user_uuid, err
 }
 
-const isBannedPlayer = `-- name: IsBannedPlayer :one
+const isPunishedPlayer = `-- name: IsPunishedPlayer :one
 SELECT id, user_uuid, reason, done_by, punish_type, time_ends FROM punished_users
-WHERE user_uuid = $1 AND punish_type = "BAN" AND time_ends > NOW()
+WHERE user_uuid = $1 AND punish_type = $2 AND time_ends > NOW()
 ORDER BY time_ends DESC LIMIT 1
 `
 
-func (q *Queries) IsBannedPlayer(ctx context.Context, userUuid uuid.UUID) (PunishedUser, error) {
-	row := q.db.QueryRowContext(ctx, isBannedPlayer, userUuid)
+type IsPunishedPlayerParams struct {
+	UserUuid   uuid.UUID
+	PunishType Punishtype
+}
+
+func (q *Queries) IsPunishedPlayer(ctx context.Context, arg IsPunishedPlayerParams) (PunishedUser, error) {
+	row := q.db.QueryRowContext(ctx, isPunishedPlayer, arg.UserUuid, arg.PunishType)
 	var i PunishedUser
 	err := row.Scan(
 		&i.ID,
