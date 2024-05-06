@@ -29,7 +29,7 @@ func loginEvent(p *proxy.Proxy) func(*proxy.LoginEvent) {
 		// check if banned
 		v, err := database.DB.IsBannedPlayer(context.Background(), uuid.UUID(player.ID()))
 		if err == nil {
-			e.Deny(&component.Text{
+			player.Disconnect(&component.Text{
 				Content: stringutil.ReplaceAll(config.ViperConfig.GetString("messages.ban.ban_message"),
 					map[string]string{
 						"%reason%": v.Reason,
