@@ -44,6 +44,8 @@ const createPunishUsersTable = `-- name: CreatePunishUsersTable :exec
 CREATE TABLE IF NOT EXISTS punished_users (
     id SERIAL PRIMARY KEY,
     user_uuid uuid NOT NULL,
+    reason text NOT NULL,
+    done_by varchar(16) NOT NULL,
     punish_type punishtype NOT NULL,
     time_ends time NOT NULL
 )
@@ -52,6 +54,38 @@ CREATE TABLE IF NOT EXISTS punished_users (
 func (q *Queries) CreatePunishUsersTable(ctx context.Context) error {
 	_, err := q.db.ExecContext(ctx, createPunishUsersTable)
 	return err
+}
+
+const getPlayerUUID = `-- name: GetPlayerUUID :one
+SELECT user_uuid FROM lookup_users
+WHERE user_name = $1
+`
+
+func (q *Queries) GetPlayerUUID(ctx context.Context, userName string) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, getPlayerUUID, userName)
+	var user_uuid uuid.UUID
+	err := row.Scan(&user_uuid)
+	return user_uuid, err
+}
+
+const isBannedPlayer = `-- name: IsBannedPlayer :one
+SELECT id, user_uuid, reason, done_by, punish_type, time_ends FROM punished_users
+WHERE user_uuid = $1 AND punish_type = "BAN" AND time_ends > NOW()
+ORDER BY time_ends DESC LIMIT 1
+`
+
+func (q *Queries) IsBannedPlayer(ctx context.Context, userUuid uuid.UUID) (PunishedUser, error) {
+	row := q.db.QueryRowContext(ctx, isBannedPlayer, userUuid)
+	var i PunishedUser
+	err := row.Scan(
+		&i.ID,
+		&i.UserUuid,
+		&i.Reason,
+		&i.DoneBy,
+		&i.PunishType,
+		&i.TimeEnds,
+	)
+	return i, err
 }
 
 const logIntoLookupTable = `-- name: LogIntoLookupTable :exec
@@ -77,19 +111,27 @@ func (q *Queries) LogIntoLookupTable(ctx context.Context, arg LogIntoLookupTable
 
 const punishPlayer = `-- name: PunishPlayer :exec
 INSERT INTO punished_users (
-    user_uuid, punish_type, time_ends
+    user_uuid, reason, done_by, punish_type, time_ends
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4, $5
 )
 `
 
 type PunishPlayerParams struct {
 	UserUuid   uuid.UUID
+	Reason     string
+	DoneBy     string
 	PunishType Punishtype
 	TimeEnds   time.Time
 }
 
 func (q *Queries) PunishPlayer(ctx context.Context, arg PunishPlayerParams) error {
-	_, err := q.db.ExecContext(ctx, punishPlayer, arg.UserUuid, arg.PunishType, arg.TimeEnds)
+	_, err := q.db.ExecContext(ctx, punishPlayer,
+		arg.UserUuid,
+		arg.Reason,
+		arg.DoneBy,
+		arg.PunishType,
+		arg.TimeEnds,
+	)
 	return err
 }

@@ -62,6 +62,8 @@ type LookupUser struct {
 type PunishedUser struct {
 	ID         int32
 	UserUuid   uuid.UUID
+	Reason     string
+	DoneBy     string
 	PunishType Punishtype
 	TimeEnds   time.Time
 }

@@ -2,6 +2,7 @@ package command
 
 import (
 	"github.com/git-fal7/gate-punish-system/internal/config"
+	"github.com/git-fal7/gate-punish-system/internal/stringutil"
 	"go.minekube.com/brigodier"
 	"go.minekube.com/common/minecraft/component"
 	"go.minekube.com/gate/pkg/command"
@@ -65,7 +66,7 @@ func kickPlayer(player proxy.Player, reason string, source command.Source) {
 		staffName = staffPlayer.Username()
 	}
 	player.Disconnect(&component.Text{
-		Content: replaceAll(config.ViperConfig.GetString("messages.kick.kick_message"),
+		Content: stringutil.ReplaceAll(config.ViperConfig.GetString("messages.kick.kick_message"),
 			map[string]string{
 				"%reason%": reason,
 				"%staff%":  staffName,
