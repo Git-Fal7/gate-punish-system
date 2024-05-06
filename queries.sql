@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS punished_users (
     reason text NOT NULL,
     done_by varchar(16) NOT NULL,
     punish_type punishtype NOT NULL,
-    time_ends timestamp NOT NULL
+    time_ends timestamptz NOT NULL
 );
 
 -- name: CreateLookupUserTable :exec
