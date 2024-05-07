@@ -2,7 +2,6 @@ package event
 
 import (
 	"context"
-	"log"
 
 	"github.com/git-fal7/gate-punish-system/internal/config"
 	"github.com/git-fal7/gate-punish-system/internal/database"
@@ -29,8 +28,6 @@ func playerChatEvent() func(*proxy.PlayerChatEvent) {
 						"%time%":   v.TimeEnds.Format(config.ViperConfig.GetString("config.time_format")),
 					})},
 			)
-		} else {
-			log.Println(err)
 		}
 	}
 }
