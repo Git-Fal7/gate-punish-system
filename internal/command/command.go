@@ -7,4 +7,5 @@ import (
 func Init(p *proxy.Proxy) {
 	p.Command().Register(kickCommand(p))
 	p.Command().Register(banCmd(p))
+	p.Command().Register(muteCmd(p))
 }

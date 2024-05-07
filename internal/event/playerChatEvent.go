@@ -12,34 +12,23 @@ import (
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 )
 
-func loginEvent() func(*proxy.LoginEvent) {
-	return func(e *proxy.LoginEvent) {
+func playerChatEvent() func(*proxy.PlayerChatEvent) {
+	return func(e *proxy.PlayerChatEvent) {
 		player := e.Player()
-
-		// log into lookup table
-		logIntoLookupTableParam := database.LogIntoLookupTableParams{
-			UserUuid: uuid.UUID(player.ID()),
-			UserName: player.Username(),
-		}
-		err := database.DB.LogIntoLookupTable(context.Background(), logIntoLookupTableParam)
-		if err != nil {
-			log.Println(err)
-		}
-
-		// check if banned
 		v, err := database.DB.IsPunishedPlayer(context.Background(), database.IsPunishedPlayerParams{
 			UserUuid:   uuid.UUID(player.ID()),
-			PunishType: database.PunishtypeBAN,
+			PunishType: database.PunishtypeMUTE,
 		})
 		if err == nil {
-			player.Disconnect(&component.Text{
-				Content: util.ReplaceAll(config.ViperConfig.GetString("messages.ban.ban_message"),
+			e.SetAllowed(false)
+			player.SendMessage(&component.Text{
+				Content: util.ReplaceAll(config.ViperConfig.GetString("messages.mute.mute_message"),
 					map[string]string{
 						"%reason%": v.Reason,
 						"%staff%":  v.DoneBy,
 						"%time%":   v.TimeEnds.Format(config.ViperConfig.GetString("config.time_format")),
-					}),
-			})
+					})},
+			)
 		} else {
 			log.Println(err)
 		}

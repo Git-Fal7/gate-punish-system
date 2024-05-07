@@ -6,5 +6,6 @@ import (
 )
 
 func Init(p *proxy.Proxy) {
-	event.Subscribe(p.Event(), 0, loginEvent(p))
+	event.Subscribe(p.Event(), 0, loginEvent())
+	event.Subscribe(p.Event(), 0, playerChatEvent())
 }

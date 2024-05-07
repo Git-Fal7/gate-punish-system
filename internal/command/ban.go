@@ -7,8 +7,8 @@ import (
 
 	"github.com/git-fal7/gate-punish-system/internal/config"
 	"github.com/git-fal7/gate-punish-system/internal/database"
-	"github.com/git-fal7/gate-punish-system/internal/stringutil"
 	"github.com/git-fal7/gate-punish-system/internal/timeutils"
+	"github.com/git-fal7/gate-punish-system/internal/util"
 	"github.com/google/uuid"
 	"go.minekube.com/brigodier"
 	"go.minekube.com/common/minecraft/component"
@@ -19,7 +19,7 @@ import (
 func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 	return brigodier.Literal("ban").
 		Requires(command.Requires(func(c *command.RequiresContext) bool {
-			return c.Source.HasPermission(config.ViperConfig.GetString("config.ban.permission"))
+			return c.Source.HasPermission(config.ViperConfig.GetString("permission.ban"))
 		})).
 		Executes(command.Command(func(c *command.Context) error {
 			c.Source.SendMessage(&component.Text{
@@ -36,7 +36,9 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 					arg := strings.ToLower(c.String("player"))
 					for _, target := range p.Players() {
 						if strings.HasPrefix(strings.ToLower(target.Username()), arg) {
-							b.Suggest(target.Username())
+							if !target.HasPermission(config.ViperConfig.GetString("permission.staff")) {
+								b.Suggest(target.Username())
+							}
 						}
 					}
 					return b.Build()
@@ -50,7 +52,7 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 						})
 						return nil
 					}
-					if target.HasPermission(config.ViperConfig.GetString("config.ban.permission")) {
+					if target.HasPermission(config.ViperConfig.GetString("permission.staff")) {
 						c.Source.SendMessage(&component.Text{
 							Content: config.ViperConfig.GetString("messages.error.cantBanPlayer"),
 						})
@@ -69,7 +71,7 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 								})
 								return nil
 							}
-							if target.HasPermission(config.ViperConfig.GetString("config.ban.permission")) {
+							if target.HasPermission(config.ViperConfig.GetString("permission.staff")) {
 								c.Source.SendMessage(&component.Text{
 									Content: config.ViperConfig.GetString("messages.error.cantBanPlayer"),
 								})
@@ -79,11 +81,11 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 							duration, err := timeutils.ParseDuration(durationString)
 							if err != nil || duration < time.Second {
 								c.Source.SendMessage(&component.Text{
-									Content: config.ViperConfig.GetString("messages.error.cantBanPlayer"),
+									Content: config.ViperConfig.GetString("messages.error.wrongDurationFormat"),
 								})
 								return nil
 							}
-							banPlayer(c.Source, target, "No Reason", duration)
+							banPlayer(p, c.Source, target, "No Reason", duration)
 							return nil
 						})).
 						Then(
@@ -97,7 +99,7 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 										})
 										return nil
 									}
-									if target.HasPermission(config.ViperConfig.GetString("config.ban.permission")) {
+									if target.HasPermission(config.ViperConfig.GetString("permission.staff")) {
 										c.Source.SendMessage(&component.Text{
 											Content: config.ViperConfig.GetString("messages.error.cantBanPlayer"),
 										})
@@ -107,12 +109,12 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 									duration, err := timeutils.ParseDuration(durationString)
 									if err != nil || duration < time.Second {
 										c.Source.SendMessage(&component.Text{
-											Content: config.ViperConfig.GetString("messages.error.cantBanPlayer"),
+											Content: config.ViperConfig.GetString("messages.error.wrongDurationFormat"),
 										})
 										return nil
 									}
 									reason := c.String("reason")
-									banPlayer(c.Source, target, reason, duration)
+									banPlayer(p, c.Source, target, reason, duration)
 									return nil
 								},
 								))),
@@ -120,7 +122,7 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 		)
 }
 
-func banPlayer(source command.Source, target proxy.Player, reason string, duration time.Duration) {
+func banPlayer(p *proxy.Proxy, source command.Source, target proxy.Player, reason string, duration time.Duration) {
 	staffPlayer, ok := source.(proxy.Player)
 	staffName := "Console"
 	if ok {
@@ -135,7 +137,15 @@ func banPlayer(source command.Source, target proxy.Player, reason string, durati
 		TimeEnds:   timeEnds,
 	})
 	target.Disconnect(&component.Text{
-		Content: stringutil.ReplaceAll(config.ViperConfig.GetString("messages.ban.ban_message"),
+		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.ban.ban_message"),
+			map[string]string{
+				"%reason%": reason,
+				"%staff%":  staffName,
+				"%time%":   timeEnds.Format(config.ViperConfig.GetString("config.time_format")),
+			}),
+	})
+	util.BroadcastPunishment(p, &component.Text{
+		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.ban.punish"),
 			map[string]string{
 				"%reason%": reason,
 				"%staff%":  staffName,

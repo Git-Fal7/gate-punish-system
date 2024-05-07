@@ -1,8 +1,10 @@
 package command
 
 import (
+	"strings"
+
 	"github.com/git-fal7/gate-punish-system/internal/config"
-	"github.com/git-fal7/gate-punish-system/internal/stringutil"
+	"github.com/git-fal7/gate-punish-system/internal/util"
 	"go.minekube.com/brigodier"
 	"go.minekube.com/common/minecraft/component"
 	"go.minekube.com/gate/pkg/command"
@@ -12,7 +14,7 @@ import (
 func kickCommand(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 	return brigodier.Literal("kick").
 		Requires(command.Requires(func(c *command.RequiresContext) bool {
-			return c.Source.HasPermission(config.ViperConfig.GetString("config.kick.permission"))
+			return c.Source.HasPermission(config.ViperConfig.GetString("permission.kick"))
 		})).
 		Executes(command.Command(func(c *command.Context) error {
 			c.Source.SendMessage(&component.Text{
@@ -25,48 +27,72 @@ func kickCommand(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 				c *command.Context,
 				b *brigodier.SuggestionsBuilder,
 			) *brigodier.Suggestions {
+				arg := strings.ToLower(c.String("player"))
 				for _, target := range p.Players() {
-					b.Suggest(target.Username())
+					if strings.HasPrefix(strings.ToLower(target.Username()), arg) {
+						if !target.HasPermission(config.ViperConfig.GetString("permission.staff")) {
+							b.Suggest(target.Username())
+						}
+					}
 				}
 				return b.Build()
 			})).
 			Executes(command.Command(func(c *command.Context) error {
-				playerStr := c.String("player")
-				plr := p.PlayerByName(playerStr)
-				if plr == nil {
+				targetName := c.String("player")
+				target := p.PlayerByName(targetName)
+				if target == nil {
 					c.Source.SendMessage(&component.Text{
 						Content: config.ViperConfig.GetString("messages.error.playerNotFound"),
 					})
 					return nil
 				}
-				kickPlayer(plr, "No reason", c.Source)
+				if target.HasPermission(config.ViperConfig.GetString("permission.staff")) {
+					c.Source.SendMessage(&component.Text{
+						Content: config.ViperConfig.GetString("messages.error.cantKickPlayer"),
+					})
+					return nil
+				}
+				kickPlayer(p, target, "No reason", c.Source)
 				return nil
 			})).
 			Then(brigodier.Argument("message", brigodier.StringPhrase).
 				Executes(command.Command(func(c *command.Context) error {
-					playerStr := c.String("player")
-					plr := p.PlayerByName(playerStr)
-					if plr == nil {
+					targetName := c.String("player")
+					target := p.PlayerByName(targetName)
+					if target == nil {
 						c.Source.SendMessage(&component.Text{
 							Content: config.ViperConfig.GetString("messages.error.playerNotFound"),
 						})
 						return nil
 					}
+					if target.HasPermission(config.ViperConfig.GetString("permission.staff")) {
+						c.Source.SendMessage(&component.Text{
+							Content: config.ViperConfig.GetString("messages.error.cantKickPlayer"),
+						})
+						return nil
+					}
 					message := c.String("message")
-					kickPlayer(plr, message, c.Source)
+					kickPlayer(p, target, message, c.Source)
 					return nil
 				})),
 			))
 }
 
-func kickPlayer(player proxy.Player, reason string, source command.Source) {
+func kickPlayer(p *proxy.Proxy, player proxy.Player, reason string, source command.Source) {
 	staffPlayer, ok := source.(proxy.Player)
 	staffName := "Console"
 	if ok {
 		staffName = staffPlayer.Username()
 	}
 	player.Disconnect(&component.Text{
-		Content: stringutil.ReplaceAll(config.ViperConfig.GetString("messages.kick.kick_message"),
+		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.kick.kick_message"),
+			map[string]string{
+				"%reason%": reason,
+				"%staff%":  staffName,
+			}),
+	})
+	util.BroadcastPunishment(p, &component.Text{
+		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.kick.punish"),
 			map[string]string{
 				"%reason%": reason,
 				"%staff%":  staffName,

@@ -22,21 +22,28 @@ func InitConfig() {
 	ViperConfig.SetDefault("permission.kick", "git-fal7.punishsystem.kick")
 	ViperConfig.SetDefault("permission.mute", "git-fal7.punishsystem.mute")
 	ViperConfig.SetDefault("permission.ban", "git-fal7.punishsystem.ban")
-	ViperConfig.SetDefault("permission.bypass", "git-fal7.punishsystem.bypass")
+	ViperConfig.SetDefault("permission.staff", "git-fal7.punishsystem.staff")
 
 	// ALL - STAFF - NONE
-	ViperConfig.SetDefault("config.broadcast_punishment_to", "all")
+	ViperConfig.SetDefault("config.broadcast_punishment_to", "ALL")
 	ViperConfig.SetDefault("config.time_format", "2006-01-02 15:04:05")
 
+	ViperConfig.SetDefault("messages.ban.format", "/ban (player) (duration) (reason)")
 	ViperConfig.SetDefault("messages.ban.punish", "%target% has been banned by %staff% for %reason% for %time%")
 	ViperConfig.SetDefault("messages.ban.ban_message", "You got banned\nfor %reason%\nby %staff%\nEnds in %time%")
 
-	ViperConfig.SetDefault("messages.ban.format", "/ban (player) (duration) (reason)")
+	ViperConfig.SetDefault("messages.mute.format", "/ban (player) (duration) (reason)")
+	ViperConfig.SetDefault("messages.mute.punish", "%target% has been muted by %staff% for %reason% for %time%")
+	ViperConfig.SetDefault("messages.mute.mute_message", "You got muted for %reason% by %staff% Ends in %time%")
+
 	ViperConfig.SetDefault("messages.kick.format", "/kick (player) (reason)")
+	ViperConfig.SetDefault("messages.kick.punish", "%target% has been banned by %staff% for %reason%")
 	ViperConfig.SetDefault("messages.kick.kick_message", "You got kicked\nReason: %reason%\nStaff: %staff%")
 
 	ViperConfig.SetDefault("messages.error.wrongDurationFormat", "Wrong duration time!, it should be as follows: 3h10m2s")
 	ViperConfig.SetDefault("messages.error.cantBanPlayer", "Cannot ban this player")
+	ViperConfig.SetDefault("messages.error.cantKickPlayer", "Cannot kick this player")
+	ViperConfig.SetDefault("messages.error.cantMutePlayer", "Cannot mute this player")
 	ViperConfig.SetDefault("messages.error.playerNotFound", "Player not found")
 
 	err := ViperConfig.ReadInConfig()
