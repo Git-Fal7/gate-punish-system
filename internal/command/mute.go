@@ -139,6 +139,7 @@ func mutePlayer(p *proxy.Proxy, source command.Source, target proxy.Player, reas
 	target.SendMessage(&component.Text{
 		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.mute.mute_message"),
 			map[string]string{
+				"%target%": target.Username(),
 				"%reason%": reason,
 				"%staff%":  staffName,
 				"%time%":   timeEnds.Format(config.ViperConfig.GetString("config.time_format")),
@@ -147,6 +148,7 @@ func mutePlayer(p *proxy.Proxy, source command.Source, target proxy.Player, reas
 	util.BroadcastPunishment(p, &component.Text{
 		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.mute.punish"),
 			map[string]string{
+				"%target%": target.Username(),
 				"%reason%": reason,
 				"%staff%":  staffName,
 				"%time%":   timeEnds.Format(config.ViperConfig.GetString("config.time_format")),

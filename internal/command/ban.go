@@ -139,6 +139,7 @@ func banPlayer(p *proxy.Proxy, source command.Source, target proxy.Player, reaso
 	target.Disconnect(&component.Text{
 		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.ban.ban_message"),
 			map[string]string{
+				"%target%": target.Username(),
 				"%reason%": reason,
 				"%staff%":  staffName,
 				"%time%":   timeEnds.Format(config.ViperConfig.GetString("config.time_format")),
@@ -147,6 +148,7 @@ func banPlayer(p *proxy.Proxy, source command.Source, target proxy.Player, reaso
 	util.BroadcastPunishment(p, &component.Text{
 		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.ban.punish"),
 			map[string]string{
+				"%target%": target.Username(),
 				"%reason%": reason,
 				"%staff%":  staffName,
 				"%time%":   timeEnds.Format(config.ViperConfig.GetString("config.time_format")),

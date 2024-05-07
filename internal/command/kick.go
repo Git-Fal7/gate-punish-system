@@ -78,15 +78,16 @@ func kickCommand(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 			))
 }
 
-func kickPlayer(p *proxy.Proxy, player proxy.Player, reason string, source command.Source) {
+func kickPlayer(p *proxy.Proxy, target proxy.Player, reason string, source command.Source) {
 	staffPlayer, ok := source.(proxy.Player)
 	staffName := "Console"
 	if ok {
 		staffName = staffPlayer.Username()
 	}
-	player.Disconnect(&component.Text{
+	target.Disconnect(&component.Text{
 		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.kick.kick_message"),
 			map[string]string{
+				"%target%": target.Username(),
 				"%reason%": reason,
 				"%staff%":  staffName,
 			}),
@@ -94,6 +95,7 @@ func kickPlayer(p *proxy.Proxy, player proxy.Player, reason string, source comma
 	util.BroadcastPunishment(p, &component.Text{
 		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.kick.punish"),
 			map[string]string{
+				"%target%": target.Username(),
 				"%reason%": reason,
 				"%staff%":  staffName,
 			}),
