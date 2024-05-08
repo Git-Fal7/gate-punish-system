@@ -93,7 +93,7 @@ func kickPlayer(p *proxy.Proxy, target proxy.Player, reason string, source comma
 			}),
 	})
 	util.BroadcastPunishment(p, &component.Text{
-		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.kick.punish"),
+		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.kick.broadcast"),
 			map[string]string{
 				"%target%": target.Username(),
 				"%reason%": reason,

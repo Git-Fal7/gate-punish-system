@@ -146,7 +146,7 @@ func banPlayer(p *proxy.Proxy, source command.Source, target proxy.Player, reaso
 			}),
 	})
 	util.BroadcastPunishment(p, &component.Text{
-		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.ban.punish"),
+		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.ban.broadcast"),
 			map[string]string{
 				"%target%": target.Username(),
 				"%reason%": reason,
