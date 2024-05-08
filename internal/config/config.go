@@ -21,6 +21,7 @@ func InitConfig() {
 
 	ViperConfig.SetDefault("permission.kick", "git-fal7.punishsystem.kick")
 	ViperConfig.SetDefault("permission.mute", "git-fal7.punishsystem.mute")
+	ViperConfig.SetDefault("permission.unmute", "git-fal7.punishsystem.unmute")
 	ViperConfig.SetDefault("permission.ban", "git-fal7.punishsystem.ban")
 	ViperConfig.SetDefault("permission.unban", "git-fal7.punishsystem.unban")
 	ViperConfig.SetDefault("permission.staff", "git-fal7.punishsystem.staff")
@@ -31,6 +32,9 @@ func InitConfig() {
 
 	ViperConfig.SetDefault("messages.unban.format", "/unban (player)")
 	ViperConfig.SetDefault("messages.unban.broadcast", "%target% has been unbanned by %staff%")
+
+	ViperConfig.SetDefault("messages.unmute.format", "/unmute (player)")
+	ViperConfig.SetDefault("messages.unmute.broadcast", "%target% has been unmuted by %staff%")
 
 	ViperConfig.SetDefault("messages.ban.format", "/ban (player) (duration) (reason)")
 	ViperConfig.SetDefault("messages.ban.broadcast", "%target% has been banned by %staff% for %reason% for %time%")
@@ -49,6 +53,7 @@ func InitConfig() {
 	ViperConfig.SetDefault("messages.error.cantKickPlayer", "Cannot kick this player")
 	ViperConfig.SetDefault("messages.error.cantMutePlayer", "Cannot mute this player")
 	ViperConfig.SetDefault("messages.error.playerUnbanned", "Player is already unbanned")
+	ViperConfig.SetDefault("messages.error.playerUnmuted", "Player is already unmuted")
 	ViperConfig.SetDefault("messages.error.playerNotFound", "Player not found")
 
 	err := ViperConfig.ReadInConfig()

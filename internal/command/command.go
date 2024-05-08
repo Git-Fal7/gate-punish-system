@@ -9,4 +9,5 @@ func Init(p *proxy.Proxy) {
 	p.Command().Register(banCmd(p))
 	p.Command().Register(muteCmd(p))
 	p.Command().Register(unbanCmd(p))
+	p.Command().Register(unmuteCmd(p))
 }
