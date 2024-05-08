@@ -47,7 +47,8 @@ CREATE TABLE IF NOT EXISTS punished_users (
     reason text NOT NULL,
     done_by varchar(16) NOT NULL,
     punish_type punishtype NOT NULL,
-    time_ends timestamptz NOT NULL
+    time_ends timestamptz NOT NULL,
+    createdat timestamptz NOT NULL
 )
 `
 
@@ -58,18 +59,18 @@ func (q *Queries) CreatePunishUsersTable(ctx context.Context) error {
 
 const getPlayerUUID = `-- name: GetPlayerUUID :one
 SELECT user_uuid FROM lookup_users
-WHERE user_name = $1
+WHERE LOWER(user_name) = LOWER($1)
 `
 
-func (q *Queries) GetPlayerUUID(ctx context.Context, userName string) (uuid.UUID, error) {
-	row := q.db.QueryRowContext(ctx, getPlayerUUID, userName)
+func (q *Queries) GetPlayerUUID(ctx context.Context, lower string) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, getPlayerUUID, lower)
 	var user_uuid uuid.UUID
 	err := row.Scan(&user_uuid)
 	return user_uuid, err
 }
 
 const isPunishedPlayer = `-- name: IsPunishedPlayer :one
-SELECT id, user_uuid, reason, done_by, punish_type, time_ends FROM punished_users
+SELECT id, user_uuid, reason, done_by, punish_type, time_ends, createdat FROM punished_users
 WHERE user_uuid = $1 AND punish_type = $2 AND time_ends > NOW()
 ORDER BY time_ends DESC LIMIT 1
 `
@@ -89,6 +90,7 @@ func (q *Queries) IsPunishedPlayer(ctx context.Context, arg IsPunishedPlayerPara
 		&i.DoneBy,
 		&i.PunishType,
 		&i.TimeEnds,
+		&i.Createdat,
 	)
 	return i, err
 }
@@ -116,9 +118,9 @@ func (q *Queries) LogIntoLookupTable(ctx context.Context, arg LogIntoLookupTable
 
 const punishPlayer = `-- name: PunishPlayer :exec
 INSERT INTO punished_users (
-    user_uuid, reason, done_by, punish_type, time_ends
+    user_uuid, reason, done_by, punish_type, time_ends, createdat
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, NOW()
 )
 `
 
@@ -138,5 +140,21 @@ func (q *Queries) PunishPlayer(ctx context.Context, arg PunishPlayerParams) erro
 		arg.PunishType,
 		arg.TimeEnds,
 	)
+	return err
+}
+
+const unpunishPlayer = `-- name: UnpunishPlayer :exec
+UPDATE punished_users
+SET time_ends = TIMESTAMP '2000-01-01 00:00:00' AT TIME ZONE 'UTC'
+WHERE user_uuid = $1 AND punish_type = $2 AND time_ends > NOW()
+`
+
+type UnpunishPlayerParams struct {
+	UserUuid   uuid.UUID
+	PunishType Punishtype
+}
+
+func (q *Queries) UnpunishPlayer(ctx context.Context, arg UnpunishPlayerParams) error {
+	_, err := q.db.ExecContext(ctx, unpunishPlayer, arg.UserUuid, arg.PunishType)
 	return err
 }

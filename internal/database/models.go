@@ -66,4 +66,5 @@ type PunishedUser struct {
 	DoneBy     string
 	PunishType Punishtype
 	TimeEnds   time.Time
+	Createdat  time.Time
 }

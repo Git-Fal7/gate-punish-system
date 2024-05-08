@@ -146,7 +146,7 @@ func mutePlayer(p *proxy.Proxy, source command.Source, target proxy.Player, reas
 			})},
 	)
 	util.BroadcastPunishment(p, &component.Text{
-		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.mute.punish"),
+		Content: util.ReplaceAll(config.ViperConfig.GetString("messages.mute.broadcast"),
 			map[string]string{
 				"%target%": target.Username(),
 				"%reason%": reason,

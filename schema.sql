@@ -9,7 +9,8 @@ CREATE TABLE punished_users (
     reason text NOT NULL,
     done_by varchar(16) NOT NULL,
     punish_type punishtype NOT NULL,
-    time_ends timestamptz NOT NULL
+    time_ends timestamptz NOT NULL,
+    createdat timestamptz NOT NULL
 );
 
 CREATE TABLE lookup_users (
