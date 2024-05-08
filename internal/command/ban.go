@@ -89,7 +89,7 @@ func banCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 							return nil
 						})).
 						Then(
-							brigodier.Argument("reason", brigodier.String).
+							brigodier.Argument("reason", brigodier.StringPhrase).
 								Executes(command.Command(func(c *command.Context) error {
 									targetName := c.String("player")
 									target := p.PlayerByName(targetName)
